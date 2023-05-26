@@ -1,0 +1,10 @@
+DELETE CHROME AND INSTALL IT AGAIN (AFTER UPGRADING DATAFRAME_IMAGE)
+
+Google Chrome 90.0.4430.72
+https://www.slimjet.com/chrome/google-chrome-old-version.php
+
+---
+
+# Financial Report: run at the last day of each month at 22h00
+0 22 28-31 * * [ "$(date +\%d -d tomorrow)" == "01" ] && /home/panpan_datahub/miniconda3/envs/fin-rep/bin/python /home/panpan_datahub/Documents/Coding/financial-report/src/financial_report/main.py >> /home/panpan_datahub/Documents/Coding/financial-report/log 2>&1
+
