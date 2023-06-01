@@ -5,6 +5,12 @@ https://www.slimjet.com/chrome/google-chrome-old-version.php
 
 ---
 
-# Financial Report: run at the last day of each month at 22h00
-0 22 28-31 * * [ "$(date +\%d -d tomorrow)" == "01" ] && /home/panpan_datahub/miniconda3/envs/fin-rep/bin/python /home/panpan_datahub/Documents/Coding/financial-report/src/financial_report/main.py >> /home/panpan_datahub/Documents/Coding/financial-report/log 2>&1
+# Financial Report: run at the last day of each month at 22h00.
+# 1) `00 22 28-31 * *`: trigger at 00 minutes, 22 hours of the 28th, 29th, 30th, and 31st day at every month and at every day of the week.
+# 2) `date +\%d -d tomorrow`: get tomorrow's day of the month using a two-digits format
+# 3) `[ "$(date +\%d -d tomorrow)" != "01" ]`: check if tomorrow is the first day of the month (if today is the last day of the month); if FALSE, execute the commands after `||`
+# 4) `bash -c 'source /home/panpan_datahub/miniconda3/bin/activate fin-rep`: run a Bash shell that activates the Conda environment `fin-rep` located at the designated path
+# 5) `/home/panpan_datahub/miniconda3/envs/fin-rep/bin/python /home/panpan_datahub/Documents/Coding/financial-report/src/financial_report/main.py`: run the Python script `main.py` located at the designated path using the designated Conda environment
+# 6) `/home/panpan_datahub/Documents/Coding/financial-report/log 2>&1`: redirect the output (stdout) and error (stderr) streams to the designated log file
+00 22 28-31 * * [ "$(date +\%d -d tomorrow)" != "01" ] || (bash -c 'source /home/panpan_datahub/miniconda3/bin/activate fin-rep && /home/panpan_datahub/miniconda3/envs/fin-rep/bin/python /home/panpan_datahub/Documents/Coding/financial-report/src/financial_report/main.py >> /home/panpan_datahub/Documents/Coding/financial-report/log 2>&1')
 
