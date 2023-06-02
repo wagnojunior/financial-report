@@ -41,7 +41,8 @@ def export(df, directory, subdirectory, name, format='.png', fontsize=12,
     dfi.export(df,
                f'../../resources/{directory}/{subdirectory}/{name}{format}',
                fontsize=fontsize,
-               table_conversion=table_conversion)
+               table_conversion=table_conversion,
+               dpi=100)
 
 
 def save(plot, directory, subdirectory, name, format='.png', padding=0):
@@ -79,7 +80,8 @@ def save(plot, directory, subdirectory, name, format='.png', padding=0):
 
     fig.savefig(
         f'../../resources/{directory}/{subdirectory}/{name}{format}',
-        bbox_inches='tight')
+        bbox_inches='tight',
+        dpi=100)
 
 
 def cumulative_amount(df, label, directory):
