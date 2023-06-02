@@ -5,7 +5,8 @@ from fpdf import FPDF, TitleStyle
 from PIL import Image
 
 CONV = 0.2645833333  # convertion factor from px to mm for a dpi of 96
-RESIZE = 0.7  # resize factor for all images
+RESIZE_GRAPH = 0.5  # resize factor for graphs
+RESIZE_TABLE = 0.7  # resize factor for tables
 
 
 class MYPDF(FPDF):
@@ -294,7 +295,7 @@ def run(port):
     # Add Current Portfolio
     add_page(
         f'../../resources/{port.parent_dir}/graph/cumulative_amount.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf)
     pdf.start_section('1. Current Portfolio', level=0)
 
@@ -310,7 +311,7 @@ def run(port):
         '- Total Fee: total amount paid in fees and taxes\n'
         '- Total Fee (%): percentage total fees',
         f'../../resources/{port.parent_dir}/table/total_invested.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -318,14 +319,14 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/cumulative_amount.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Portfolio Composition
     add_page(
         f'../../resources/{port.parent_dir}/table/current_assets.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf)
     pdf.start_section('1.2. Portfolio Composition', level=1)
     add_standard_report(
@@ -338,14 +339,14 @@ def run(port):
         '- Close Price: previous close price\n'
         '- Amount: total amount based on the previous close price\n',
         f'../../resources/{port.parent_dir}/table/current_assets.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
 
     # Add Dividends
     add_page(
         f'../../resources/{port.parent_dir}/table/assets_dividend.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf)
     pdf.start_section('1.3. Dividends', level=1)
     add_standard_report(
@@ -360,13 +361,13 @@ def run(port):
         '- Avg. Price: average price \n'
         '- Dividend Yield (%): net DPS divided by the average price',
         f'../../resources/{port.parent_dir}/table/assets_dividend.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf)
 
     # Add Breakdown
     add_page(
         f'../../resources/{port.parent_dir}/table/breakdown_current_assets.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf)
     pdf.start_section('1.4. Capital Gain', level=1)
     add_standard_report(
@@ -384,14 +385,14 @@ def run(port):
         'exchange rate\n'
         '- Capital Gain (%): percentage capital gain\n',
         f'../../resources/{port.parent_dir}/table/breakdown_current_assets.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
 
     # Add Asset Allocation
     add_page(
         f'../../resources/{port.parent_dir}/table/allocation_name.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf)
     pdf.start_section('1.5. Asset Allocation', level=1)
 
@@ -406,7 +407,7 @@ def run(port):
         '- Allocation (%): percentage asset allocation by name and grouped '
         'by currency',
         f'../../resources/{port.parent_dir}/table/allocation_name.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -414,14 +415,14 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/allocation_name.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Allocation by Type
     add_page(
         f'../../resources/{port.parent_dir}/table/allocation_type.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf)
     pdf.start_section('1.5.2. Type', level=2)
     add_standard_report(
@@ -433,7 +434,7 @@ def run(port):
         '- Allocation (%): percentage asset allocation by name and grouped '
         'by currency',
         f'../../resources/{port.parent_dir}/table/allocation_type.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -441,14 +442,14 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/allocation_type.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Allocation by Industry
     add_page(
         f'../../resources/{port.parent_dir}/table/allocation_industry.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf)
     pdf.start_section('1.5.3. Industry', level=2)
     add_standard_report(
@@ -460,7 +461,7 @@ def run(port):
         '- Allocation (%): percentage asset allocation by industry and '
         'grouped by currency',
         f'../../resources/{port.parent_dir}/table/allocation_industry.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -468,14 +469,14 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/allocation_industry.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Allocation by Market
     add_page(
         f'../../resources/{port.parent_dir}/table/allocation_market.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf)
     pdf.start_section('1.5.4. Market', level=2)
     add_standard_report(
@@ -487,7 +488,7 @@ def run(port):
         '- Allocation (%): percentage asset allocation by market and grouped '
         'by currency',
         f'../../resources/{port.parent_dir}/table/allocation_market.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -495,14 +496,14 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/allocation_market.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Technical Analysis
     add_page(
         f'../../resources/{port.parent_dir}/table/portfolio_beta.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf)
     pdf.start_section('1.6. Technical Analysis', level=1)
 
@@ -520,7 +521,7 @@ def run(port):
         'benchmark\n'
         '- Weighted beta: beta weighted by the allocation',
         f'../../resources/{port.parent_dir}/table/portfolio_beta.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -528,14 +529,14 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/beta_all.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Correlation Matrix
     add_page(
         f'../../resources/{port.parent_dir}/graph/correlation_matrix.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf)
     pdf.start_section('1.6.2. Correlation Matrix', level=2)
     add_standard_report(
@@ -544,14 +545,14 @@ def run(port):
         'Portfolio',
         '',
         f'../../resources/{port.parent_dir}/graph/correlation_matrix.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Price History
     add_page(
         f'../../resources/{port.parent_dir}/graph/price_history.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf)
     pdf.start_section('1.6.3. Price History', level=2)
     add_standard_report(
@@ -562,14 +563,14 @@ def run(port):
         'asset has the same weight\n'
         '- Current portfolio: the current portfolio with updated weights',
         f'../../resources/{port.parent_dir}/graph/price_history.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Monte Carlo Simulation
     add_page(
         f'../../resources/{port.parent_dir}/graph/monte_carlo.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf)
     pdf.start_section('1.6.4. Monte Carlo Simulation', level=2)
     add_standard_report(
@@ -579,7 +580,7 @@ def run(port):
         f'- Number of simulations: {port.num_sim}\n'
         f'- Simulation period: {port.time_sim} days ({port.time_sim/260} years)',
         f'../../resources/{port.parent_dir}/table/monte_carlo.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -587,14 +588,14 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/monte_carlo.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Efficient Frontier
     add_page(
         f'../../resources/{port.parent_dir}/graph/efficient_frontier.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf)
     pdf.start_section('1.6.5. Efficient Frontier', level=2)
     add_standard_report(
@@ -610,7 +611,7 @@ def run(port):
         '- Max. Sharpe Ratio (5%): optimized portfolio with at least 5% '
         'allocation that generates the maximum Sharpe Ratio',
         f'../../resources/{port.parent_dir}/table/efficient_frontier.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -618,14 +619,14 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/efficient_frontier.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Past Portfolio
     add_page(
         f'../../resources/{port.parent_dir}/table/past_assets.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf)
     pdf.start_section('2. Past Portfolio', level=0)
 
@@ -641,14 +642,14 @@ def run(port):
         '- Selling Price: selling price\n'
         '- Amount: total amount based on the selling price\n',
         f'../../resources/{port.parent_dir}/table/past_assets.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
 
     # Add Portfolio Composition
     add_page(
         f'../../resources/{port.parent_dir}/table/breakdown_past_assets.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf)
     pdf.start_section('2.2. Capital Gain', level=1)
     add_standard_report(
@@ -666,14 +667,14 @@ def run(port):
         'exchange rate\n'
         '- Capital Gain (%): percentage capital gain\n',
         f'../../resources/{port.parent_dir}/table/breakdown_past_assets.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
 
     # Add Fees
     add_page(
         f'../../resources/{port.parent_dir}/graph/cumulative_fee.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf)
     pdf.start_section('3. Fees', level=0)
 
@@ -688,7 +689,7 @@ def run(port):
         '- Total Fee: total amount paid to the broker and in taxes\n'
         '- Total Fee (%): percentage total fees',
         f'../../resources/{port.parent_dir}/table/total_fee.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -696,13 +697,15 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/cumulative_fee.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Fee
     add_page(
-        f'../../resources/{port.parent_dir}/table/fee_name.png', RESIZE, pdf)
+        f'../../resources/{port.parent_dir}/table/fee_name.png',
+        RESIZE_TABLE,
+        pdf)
     pdf.start_section('3.2. Fee Allocation', level=1)
 
     # Add Fee by Name
@@ -718,7 +721,7 @@ def run(port):
         '- Total Fee: total amount paid in fees and taxes\n'
         '- Total Fee (%): percentage total fees per currency',
         f'../../resources/{port.parent_dir}/table/fee_name.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -726,13 +729,15 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/fee_name.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Fee by Type
     add_page(
-        f'../../resources/{port.parent_dir}/table/fee_type.png', RESIZE, pdf)
+        f'../../resources/{port.parent_dir}/table/fee_type.png',
+        RESIZE_TABLE,
+        pdf)
     pdf.start_section('3.2.2. Type', level=2)
     add_standard_report(
         True,
@@ -745,7 +750,7 @@ def run(port):
         '- Total Fee: total amount paid in fees and taxes\n'
         '- Total Fee (%): percentage total fees per currency',
         f'../../resources/{port.parent_dir}/table/fee_type.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -753,14 +758,14 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/fee_type.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Fee by Industry
     add_page(
         f'../../resources/{port.parent_dir}/table/fee_industry.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf)
     pdf.start_section('3.2.3. Industry', level=2)
     add_standard_report(
@@ -774,7 +779,7 @@ def run(port):
         '- Total Fee: total amount paid in fees and taxes\n'
         '- Total Fee (%): percentage total fees per currency',
         f'../../resources/{port.parent_dir}/table/fee_industry.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -782,13 +787,15 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/fee_industry.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
     # Add Fee by Market
     add_page(
-        f'../../resources/{port.parent_dir}/table/fee_market.png', RESIZE, pdf)
+        f'../../resources/{port.parent_dir}/table/fee_market.png',
+        RESIZE_TABLE,
+        pdf)
     pdf.start_section('3.2.4. Market', level=2)
     add_standard_report(
         True,
@@ -801,7 +808,7 @@ def run(port):
         '- Total Fee: total amount paid in fees and taxes\n'
         '- Total Fee (%): percentage total fees per currency',
         f'../../resources/{port.parent_dir}/table/fee_market.png',
-        RESIZE,
+        RESIZE_TABLE,
         pdf
     )
     add_standard_report(
@@ -809,7 +816,7 @@ def run(port):
         '',
         '',
         f'../../resources/{port.parent_dir}/graph/fee_market.png',
-        RESIZE,
+        RESIZE_GRAPH,
         pdf
     )
 
