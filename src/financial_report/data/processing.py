@@ -721,6 +721,18 @@ def past_assets(raw_data, port):
             my_raw_data_past_buy_sell['Operation'] == 'Buy']
     )
 
+    if len(my_raw_data_past_buy.index) == 0:
+        data = {'There are no past assets in this portfolio': []}
+        my_past_assets = pd.DataFrame(data)
+
+        # Exports image
+        image.export(my_past_assets,
+                     port.parent_dir,
+                     'table',
+                     'past_assets')
+
+        return my_past_assets
+
     my_raw_data_past_sell = (
         my_raw_data_past_buy_sell[
             my_raw_data_past_buy_sell['Operation'] == 'Sell']
@@ -950,9 +962,22 @@ def passive_portfolio(current_assets, port):
 
     """
 
-    my_passive_portfolio = (
-        current_assets.loc[pd.IndexSlice['ETF', :], :]
-    )
+    try:
+        my_passive_portfolio = (
+            current_assets.loc[pd.IndexSlice['ETF', :], :]
+        )
+
+    except KeyError:
+        data = {'There are no active assets in this portfolio': []}
+        my_passive_portfolio = pd.DataFrame(data)
+
+        # Exports image
+        image.export(my_passive_portfolio,
+                     port.parent_dir,
+                     'table',
+                     'passive_portfolio')
+
+        return my_passive_portfolio
 
     print_df = my_passive_portfolio.copy()
     print_df = (
@@ -988,9 +1013,22 @@ def active_portfolio(current_assets, port):
 
     """
 
-    my_active_portfolio = (
-        current_assets.loc[pd.IndexSlice['Stock', :], :]
-    )
+    try:
+        my_active_portfolio = (
+            current_assets.loc[pd.IndexSlice['Stock', :], :]
+        )
+
+    except KeyError:
+        data = {'There are no active assets in this portfolio': []}
+        my_active_portfolio = pd.DataFrame(data)
+
+        # Exports image
+        image.export(my_active_portfolio,
+                     port.parent_dir,
+                     'table',
+                     'active_portfolio')
+
+        return my_active_portfolio
 
     print_df = my_active_portfolio.copy()
     print_df = (
@@ -1082,11 +1120,28 @@ def breakdown_past_assets(raw_data, port):
         .fillna(0)
     )
 
-    # After unstacking dtype int64 are converted to float64
-    # Converts `QTY.` back to int64
-    my_breakdown_past_assets[('QTY.')] = (
-        my_breakdown_past_assets[('QTY.')].astype(np.int64)
-    )
+    # my_breakdown_past_assets` is empty in case there are no past assets in
+    # a portfolio. Any operations on this dataframe will raise a `KeyError`
+    # error, which is handled by creating and exporting a dataframe with a
+    # message
+    try:
+        # After unstacking dtype int64 are converted to float64
+        # Converts `QTY.` back to int64
+        my_breakdown_past_assets[('QTY.')] = (
+            my_breakdown_past_assets[('QTY.')].astype(np.int64)
+        )
+
+    except KeyError:
+        data = {'There are no past assets in this portfolio': []}
+        my_breakdown_past_assets = pd.DataFrame(data)
+
+        # Exports image
+        image.export(my_breakdown_past_assets,
+                     port.parent_dir,
+                     'table',
+                     'breakdown_past_assets')
+
+        return my_breakdown_past_assets
 
     # Defines the function to calculate the capital gain/loss.
     # The difference between the `sell_price` and `buy_price is
@@ -1118,20 +1173,22 @@ def breakdown_past_assets(raw_data, port):
         )
 
     # Catches KeyError if there is no dividend
-    except KeyError:
-        my_breakdown_past_assets['Capital Gain'] = (
-            calc_capital_gain_loss(
-                my_breakdown_past_assets[('Amount', 'Buy')],
-                my_breakdown_past_assets[('Amount', 'Sell')],
-                0,
-                my_breakdown_past_assets[('Broker Fee', 'Buy')] +
-                my_breakdown_past_assets[('Tax Fee', 'Buy')],
-                my_breakdown_past_assets[('Broker Fee', 'Sell')] +
-                my_breakdown_past_assets[('Tax Fee', 'Sell')],
-                0,
-                my_breakdown_past_assets[('Avg. Rate', 'Buy')],
-                my_breakdown_past_assets[('Avg. Rate', 'Sell')])
-        )
+    except KeyError as e:
+
+        if str(e) == 'Dividend':
+            my_breakdown_past_assets['Capital Gain'] = (
+                calc_capital_gain_loss(
+                    my_breakdown_past_assets[('Amount', 'Buy')],
+                    my_breakdown_past_assets[('Amount', 'Sell')],
+                    0,
+                    my_breakdown_past_assets[('Broker Fee', 'Buy')] +
+                    my_breakdown_past_assets[('Tax Fee', 'Buy')],
+                    my_breakdown_past_assets[('Broker Fee', 'Sell')] +
+                    my_breakdown_past_assets[('Tax Fee', 'Sell')],
+                    0,
+                    my_breakdown_past_assets[('Avg. Rate', 'Buy')],
+                    my_breakdown_past_assets[('Avg. Rate', 'Sell')])
+            )
 
     my_breakdown_past_assets['Capital Gain (%)'] = (
         100 * my_breakdown_past_assets[('Capital Gain', '')] /

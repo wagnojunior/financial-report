@@ -326,24 +326,30 @@ def correlation(corr_matrix, names, port):
     def fig_size():
         return 0.8 * len(names) + 2.4
 
-    # Chart
-    fig = sns.clustermap(corr_matrix,
-                         cmap='RdYlGn',
-                         vmax=1.0,
-                         vmin=-1.0,
-                         mask=False,
-                         linewidths=2.5,
-                         annot=True,
-                         dendrogram_ratio=(0.3, 0.3),
-                         fmt='.2f',
-                         figsize=(fig_size(), fig_size()))
-    sns.set_style('darkgrid')
-    sns.set(font_scale=1)
-    ax = fig.ax_heatmap
-    ax.set_xlabel('')
-    ax.set_ylabel('')
-    plt.setp(fig.ax_heatmap.yaxis.get_majorticklabels(), rotation=0)
-    plt.setp(fig.ax_heatmap.xaxis.get_majorticklabels(), rotation=90)
+    try:
+        # Chart
+        fig = sns.clustermap(corr_matrix,
+                             cmap='RdYlGn',
+                             vmax=1.0,
+                             vmin=-1.0,
+                             mask=False,
+                             linewidths=2.5,
+                             annot=True,
+                             dendrogram_ratio=(0.3, 0.3),
+                             fmt='.2f',
+                             figsize=(fig_size(), fig_size()))
+        sns.set_style('darkgrid')
+        sns.set(font_scale=1)
+        ax = fig.ax_heatmap
+        ax.set_xlabel('')
+        ax.set_ylabel('')
+        plt.setp(fig.ax_heatmap.yaxis.get_majorticklabels(), rotation=0)
+        plt.setp(fig.ax_heatmap.xaxis.get_majorticklabels(), rotation=90)
+
+    except ValueError:
+        fig = plt.figure(figsize=(fig_size(), fig_size()))
+        fig.text(0, 0, "Can not plot the correlation matrix of a portfolio "
+                 "with a single asset.")
 
     # Exports graph
     save(fig, port.parent_dir, 'graph', 'correlation_matrix')
