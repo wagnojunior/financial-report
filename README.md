@@ -1,6 +1,6 @@
-# portfolio-summary
+# financial-report
 
-This repository handles the summary report, and distribution via email of an investment portfolio. 
+**financial-report** analyzes your investment transactions (buy/sell operations and dividends received) and compiles them into a neat financial report! At the end of each month you will receive the report directly to your email, so you can track your investment progress and make better, educated decisions.
 
 The summary items are:
 
@@ -32,9 +32,9 @@ The summary items are:
 
 ## Input
 
-The input file is a `.xlsx` file populated with the transactions history of 
-the portfolio. The following fields should be entered when a transation is 
-recorded:
+The input file is a `.xlsx` file populated with the transactions history of the portfolio. The following fields should be entered when a transation is recorded:
+
+>**IMPORTANT:** Keep this file updated for an accurate analyzes.
 
 ![image](https://user-images.githubusercontent.com/59410219/155932911-a04481b6-465e-4950-a39e-1a9096ac9751.png)
 
@@ -55,6 +55,25 @@ recorded:
 15. Tax Fee: tax fee charged for the transaction
 16. Exchange Rate: exchange rate used in the transaction having KRW as reference
 
+**financial-report** will automatically download the input file from Google Drive, provided access has been granted and the document ID is available.
+
+To alow access to the input file go to your Google Drive page, click the `Share` and choose `Anyone with the link`. Aditionally, you can set the role to `Viewer` to ensure that the file is protected against write operations.
+<img src="https://github.com/wagnojunior/financial-report/assets/59410219/2066d9e3-bda2-4f48-be4a-ad165966c4fd" width="500" />
+
+
+To check the document ID open the file you just shared and refer to the its URL; the document ID is located there.
+<img src="https://github.com/wagnojunior/financial-report/assets/59410219/bcde15da-d3f7-446c-a57b-b2fcafeadb0c" width="500" />
+
+
+Now, populate the `.env` file with the appropriete information, like below:
+```
+# SMPT server API token
+api_token="ENTER_YOUR_API_TOKEN_HERE"
+
+# Google docs ID and URL
+doc_id="ENTER_YOUR_DOC_ID_HERE"
+doc_url="https://drive.google.com/uc?id=${doc_id}"
+```
 
 ## Output
 
