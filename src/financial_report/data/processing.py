@@ -506,7 +506,7 @@ def cumulative_amount(raw_data, port):
     image.cumulative_amount(my_cumulative_amount, label, port.parent_dir)
 
 
-def avg_price(raw_data, port):
+def avg_price(df):
     """
     TODO: IT WOULD BE BETTER TO RECEIVE THE ACTUAL DATAFRAME AS ARGUMENT,
     AND NOT THE RAW_DATA.
@@ -555,9 +555,6 @@ def avg_price(raw_data, port):
 
         return pd.Series(avg, df.index)
 
-    df = (
-        raw_data_current_buy_sell(raw_data)
-    )
     df['Cum QTY.'] = df.groupby('Code')['QTY.'].cumsum()
     df['Cum Amount'] = df.groupby('Code')['Amount'].cumsum()
     df['Avg. Price'] = np.nan
@@ -623,7 +620,9 @@ def current_assets(raw_data, port):
     )
 
     # Adds column with average purchase price
-    my_current_assets['Avg. Price'] = avg_price(raw_data, port)
+    my_current_assets['Avg. Price'] = (
+        avg_price(raw_data_current_buy_sell(raw_data))
+    )
 
     # Removes irrelevant information
     my_current_assets = (
