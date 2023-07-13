@@ -343,16 +343,19 @@ def all_assets(raw_data, port):
 
     """
 
-    my_raw_data_buy = (
-        raw_data_buy(raw_data)
+    # my_raw_data_buy = (
+    #     raw_data_buy(raw_data)
+    # )
+    my_raw_data_buy_sell = (
+        raw_data_negative(raw_data_buy_sell(raw_data))
     )
 
     # Defines the lambda function to calculate a weighted average
     def wa(x):
         return np.average(x,
                           weights=(
-                              my_raw_data_buy.loc[x.index,
-                                                  'Amount']))
+                              my_raw_data_buy_sell.loc[x.index,
+                                                       'Amount']))
 
     # Defines a group dictionary
     group = ['Type',
@@ -365,25 +368,31 @@ def all_assets(raw_data, port):
 
     # All assets include current and past assets
     my_all_assets = (
-        my_raw_data_buy
+        my_raw_data_buy_sell
         .groupby(by=group)
         .agg({'QTY.': 'sum',
              'Amount': 'sum'}))
 
+    # # Adds column with average purchase price
+    # my_all_assets['Avg. Price'] = (
+    #     my_all_assets['Amount'] /
+    #     my_all_assets['QTY.']
+    # )
+
     # Adds column with average purchase price
     my_all_assets['Avg. Price'] = (
-        my_all_assets['Amount'] /
-        my_all_assets['QTY.']
+        avg_price(raw_data_negative(raw_data_buy_sell(raw_data)))
     )
 
     # Adds column with weighted average exchange rate
     my_all_assets['Avg. Rate'] = (
-        my_raw_data_buy
+        my_raw_data_buy_sell
         .groupby(by=group)
         .agg(**{'Ave. Rate': ('Exchange Rate', wa)})
     )
 
-    print_df = my_all_assets.copy().reset_index(level=['Code 2'], drop=True)
+    print_df = my_all_assets.copy().reset_index(level=['Code 2'],
+                                                drop=True)
     print_df = (
         print_df.style
         .format(precision=2,
@@ -534,24 +543,28 @@ def avg_price(df):
             # 3. selling: all sell operations. It happens when the current
             # quantity is smaller than the precious one. The average does not
             # change.
-            # 4. liquidation: liquidation operation. Ir happens when an asset
-            # is completely sold, meaning the cumulative quantity is zero. The
-            # is reset back to zero.
+            # 4. partial_liq: partial liquidation. It happens when an asset
+            # is completely sold and subsequently purchased gain. This is
+            # verified by checking if this transaction is not the last one. The
+            # average is resete back to zero.
+            # 5. total_liq: total liquidation. It happens when an asset is
+            # completely sold never purchased again. This is verified by
+            # checking if the transaction is the last one. The average does not
+            # change.
             first = (i == 0)
+            last = (i == len(df) - 1)
             buying = (cum_qty[i] > cum_qty[i-1])
             selling = (cum_qty[i] < cum_qty[i-1])
-            liquidation = (cum_qty[i] == 0)
+            partial_liq = (cum_qty[i] == 0) and (not last)
+            total_liq = (cum_qty[i] == 0) and (last)
 
             if first or buying:
                 avg[i] = cum_amount[i]/cum_qty[i]
-                # avg.append(cum_amount[i]/cum_qty[i])
-            elif liquidation:
+            elif partial_liq:
                 avg[i] = 0
-                # avg.append(0)
                 cum_amount = cum_amount - cum_amount[i]
-            elif selling:
+            elif total_liq or selling:
                 avg[i] = avg[i-1]
-                # avg.append(avg[i-1])
 
         return pd.Series(avg, df.index)
 
