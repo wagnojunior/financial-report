@@ -373,12 +373,6 @@ def all_assets(raw_data, port):
         .agg({'QTY.': 'sum',
              'Amount': 'sum'}))
 
-    # # Adds column with average purchase price
-    # my_all_assets['Avg. Price'] = (
-    #     my_all_assets['Amount'] /
-    #     my_all_assets['QTY.']
-    # )
-
     # Adds column with average purchase price
     my_all_assets['Avg. Price'] = (
         avg_price(raw_data_negative(raw_data_buy_sell(raw_data)))
@@ -517,22 +511,31 @@ def cumulative_amount(raw_data, port):
 
 def avg_price(df):
     """
-    TODO: IT WOULD BE BETTER TO RECEIVE THE ACTUAL DATAFRAME AS ARGUMENT,
-    AND NOT THE RAW_DATA.
+    `avg_price` calculates and returns the average price of an asset whose
+    transactions are defined in the given dataframe.
+
+    Parameters
+    ----------
+    df : dataframe
+        buy/sell log file in which sell transactions are negative.
+
+    Returns
+    -------
+    avg : Series
+        average price.
 
     """
 
-    def avg_price(df):
+    def calc(df):
         cum_qty = df['Cum QTY.'].values
         cum_amount = df['Cum Amount'].values
         avg = np.zeros(len(df))
-        # avg = []
 
         # Loops through `cum_qty` and `cum_amount` simulteneously. In case of
         # a `liquidation`, the array `cum_amount` is updated inside the for
         # loop. Since the iterator created by `enumerate` is not updated, the
         # elements of`cum_qty` and `cum_amount` are accessed via the index `i`
-        for i, (_, _) in enumerate(zip(cum_qty, cum_amount)):
+        for i in range(len(df)):
             # Defines the four possible scenarios:
             # 1. `first`: the first buy operation of an asset. It happens when
             # the index i is equal to zero. This scenario has to be checked
@@ -571,7 +574,7 @@ def avg_price(df):
     df['Cum QTY.'] = df.groupby('Code')['QTY.'].cumsum()
     df['Cum Amount'] = df.groupby('Code')['Amount'].cumsum()
     df['Avg. Price'] = np.nan
-    df['Avg. Price'] = df.groupby('Code').apply(avg_price).droplevel(0)
+    df['Avg. Price'] = df.groupby('Code').apply(calc).droplevel(0)
 
     group = ['Type',
              'Industry',
