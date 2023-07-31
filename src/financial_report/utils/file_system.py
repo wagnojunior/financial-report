@@ -89,7 +89,8 @@ def download_rawData(port):
     """
 
     # Load environmental variables
-    load_dotenv(dotenv_path=f'../../resources/{port.parent_dir}/.env')
+    load_dotenv(dotenv_path=f'../../resources/{port.parent_dir}/.env',
+                override=True)
     url = os.environ.get("doc_url")
 
     # Download

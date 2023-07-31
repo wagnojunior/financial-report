@@ -131,8 +131,8 @@ def raw_data_dividend(raw_data):
 
 def raw_data_negative(raw_data):
     """
-    `raw_data_negative` returns a dataframe with negative `QTY.` values for
-    sold assets.
+    `raw_data_negative` returns a dataframe with negative `QTY.` values and
+    `Amount` for sold assets.
 
     Parameters
     ----------
@@ -146,9 +146,12 @@ def raw_data_negative(raw_data):
 
     """
 
-    aux = raw_data_buy_sell(raw_data).copy()
+    # aux = raw_data_buy_sell(raw_data).copy()
+
+    aux = raw_data.copy()
 
     aux.loc[(aux['Operation'] == 'Sell'), 'QTY.'] *= -1
+    aux.loc[(aux['Operation'] == 'Sell'), 'Amount'] *= -1
 
     return aux
 
@@ -170,7 +173,8 @@ def liquidation_list(raw_data):
     """
 
     aux = (
-        raw_data_negative(raw_data)
+        # raw_data_negative(raw_data)
+        raw_data_negative(raw_data_buy_sell(raw_data))
         .groupby(by=['Code'])
         .agg({'QTY.': 'sum',
               'Amount': 'sum'})
@@ -204,7 +208,7 @@ def n_liquidation_list(raw_data):
     """
 
     aux = (
-        raw_data_negative(raw_data)
+        raw_data_negative(raw_data_buy_sell(raw_data))
         .groupby(by=['Code'])
         .agg({'QTY.': 'sum',
               'Amount': 'sum'})
@@ -311,7 +315,7 @@ def raw_data_current_buy_sell(raw_data):
 
     """
 
-    aux = raw_data_buy_sell(raw_data)
+    aux = raw_data_buy_sell(raw_data_negative(raw_data))
 
     aux = (
         aux[aux['Code'].isin(n_liquidation_list(raw_data))]
@@ -339,16 +343,19 @@ def all_assets(raw_data, port):
 
     """
 
-    my_raw_data_buy = (
-        raw_data_buy(raw_data)
+    # my_raw_data_buy = (
+    #     raw_data_buy(raw_data)
+    # )
+    my_raw_data_buy_sell = (
+        raw_data_negative(raw_data_buy_sell(raw_data))
     )
 
     # Defines the lambda function to calculate a weighted average
     def wa(x):
         return np.average(x,
                           weights=(
-                              my_raw_data_buy.loc[x.index,
-                                                  'Amount']))
+                              my_raw_data_buy_sell.loc[x.index,
+                                                       'Amount']))
 
     # Defines a group dictionary
     group = ['Type',
@@ -361,25 +368,25 @@ def all_assets(raw_data, port):
 
     # All assets include current and past assets
     my_all_assets = (
-        my_raw_data_buy
+        my_raw_data_buy_sell
         .groupby(by=group)
         .agg({'QTY.': 'sum',
              'Amount': 'sum'}))
 
     # Adds column with average purchase price
     my_all_assets['Avg. Price'] = (
-        my_all_assets['Amount'] /
-        my_all_assets['QTY.']
+        avg_price(raw_data_negative(raw_data_buy_sell(raw_data)))
     )
 
     # Adds column with weighted average exchange rate
     my_all_assets['Avg. Rate'] = (
-        my_raw_data_buy
+        my_raw_data_buy_sell
         .groupby(by=group)
         .agg(**{'Ave. Rate': ('Exchange Rate', wa)})
     )
 
-    print_df = my_all_assets.copy().reset_index(level=['Code 2'], drop=True)
+    print_df = my_all_assets.copy().reset_index(level=['Code 2'],
+                                                drop=True)
     print_df = (
         print_df.style
         .format(precision=2,
@@ -502,6 +509,85 @@ def cumulative_amount(raw_data, port):
     image.cumulative_amount(my_cumulative_amount, label, port.parent_dir)
 
 
+def avg_price(df):
+    """
+    `avg_price` calculates and returns the average price of an asset whose
+    transactions are defined in the given dataframe.
+
+    Parameters
+    ----------
+    df : dataframe
+        buy/sell log file in which sell transactions are negative.
+
+    Returns
+    -------
+    avg : Series
+        average price.
+
+    """
+
+    def calc(df):
+        cum_qty = df['Cum QTY.'].values
+        cum_amount = df['Cum Amount'].values
+        avg = np.zeros(len(df))
+
+        # Loops through `cum_qty` and `cum_amount` simulteneously. In case of
+        # a `liquidation`, the array `cum_amount` is updated inside the for
+        # loop. Since the iterator created by `enumerate` is not updated, the
+        # elements of`cum_qty` and `cum_amount` are accessed via the index `i`
+        for i in range(len(df)):
+            # Defines the four possible scenarios:
+            # 1. `first`: the first buy operation of an asset. It happens when
+            # the index i is equal to zero. This scenario has to be checked
+            # before any other. The average is calculated normally.
+            # 2. buying: all other buy operations. It happens when the
+            # current quantity is greater than the previous one. The average is
+            # calculated normally.
+            # 3. selling: all sell operations. It happens when the current
+            # quantity is smaller than the precious one. The average does not
+            # change.
+            # 4. partial_liq: partial liquidation. It happens when an asset
+            # is completely sold and subsequently purchased gain. This is
+            # verified by checking if this transaction is not the last one. The
+            # average is resete back to zero.
+            # 5. total_liq: total liquidation. It happens when an asset is
+            # completely sold never purchased again. This is verified by
+            # checking if the transaction is the last one. The average does not
+            # change.
+            first = (i == 0)
+            last = (i == len(df) - 1)
+            buying = (cum_qty[i] > cum_qty[i-1])
+            selling = (cum_qty[i] < cum_qty[i-1])
+            partial_liq = (cum_qty[i] == 0) and (not last)
+            total_liq = (cum_qty[i] == 0) and (last)
+
+            if first or buying:
+                avg[i] = cum_amount[i]/cum_qty[i]
+            elif partial_liq:
+                avg[i] = 0
+                cum_amount = cum_amount - cum_amount[i]
+            elif total_liq or selling:
+                avg[i] = avg[i-1]
+
+        return pd.Series(avg, df.index)
+
+    df['Cum QTY.'] = df.groupby('Code')['QTY.'].cumsum()
+    df['Cum Amount'] = df.groupby('Code')['Amount'].cumsum()
+    df['Avg. Price'] = np.nan
+    df['Avg. Price'] = df.groupby('Code').apply(calc).droplevel(0)
+
+    group = ['Type',
+             'Industry',
+             'Market',
+             'Code',
+             'Code 2',
+             'Name',
+             'Currency']
+
+    avg = df.groupby(group).last()['Avg. Price']
+    return avg
+
+
 def current_assets(raw_data, port):
     """
     `current_assets` returns and exports a dataframe with the portfolio's
@@ -531,6 +617,7 @@ def current_assets(raw_data, port):
                           weights=(
                               my_raw_data_current_buy_sell.loc[x.index,
                                                                'Amount']))
+
     group = ['Type',
              'Industry',
              'Market',
@@ -550,8 +637,7 @@ def current_assets(raw_data, port):
 
     # Adds column with average purchase price
     my_current_assets['Avg. Price'] = (
-        my_current_assets['Amount'] /
-        my_current_assets['QTY.']
+        avg_price(raw_data_current_buy_sell(raw_data))
     )
 
     # Removes irrelevant information
